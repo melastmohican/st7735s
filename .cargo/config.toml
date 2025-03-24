@@ -1,0 +1,49 @@
+[target.thumbv7em-none-eabihf]
+runner = "probe-rs run --chip STM32H750VBTx"
+
+rustflags = [
+  # LLD (shipped with the Rust toolchain) is used as the default linker
+  "-C", "link-arg=-Tlink.x",
+  # "-C", "link-arg=-Tdefmt.x",
+  # "-C", "link-arg=-Tstlog.x",
+
+  # if you run into problems with LLD switch to the GNU linker by commenting out
+  # this line
+  # "-C", "linker=arm-none-eabi-ld",
+
+  # if you need to link to pre-compiled C libraries provided by a C toolchain
+  # use GCC as the linker by commenting out both lines above and then
+  # uncommenting the three lines below
+  # "-C", "linker=arm-none-eabi-gcc",
+  # "-C", "link-arg=-Wl,-Tlink.x",
+  # "-C", "link-arg=-nostartfiles",
+]
+
+[target.thumbv6m-none-eabi]
+# Choose a default "cargo run" tool (see README for more info)
+# - `probe-rs` provides flashing and defmt via a hardware debugger, and stack unwind on panic
+# - elf2uf2-rs loads firmware over USB when the rp2040 is in boot mode
+# runner = "probe-rs run --chip RP2040 --protocol swd"
+# runner = "elf2uf2-rs -d"
+runner = "probe-rs run --chip RP2040 --protocol swd"
+rustflags = [
+  "-C", "linker=flip-link",
+  "-C", "link-arg=--nmagic",
+  "-C", "link-arg=-Tlink.x",
+  "-C", "link-arg=-Tdefmt.x",
+
+  # Code-size optimizations.
+  #   trap unreachable can save a lot of space, but requires nightly compiler.
+  #   uncomment the next line if you wish to enable it
+  # "-Z", "trap-unreachable=no",
+  "-C", "inline-threshold=5",
+  "-C", "no-vectorize-loops",
+]
+
+[build]
+#target = "thumbv7em-none-eabihf"
+target = "thumbv6m-none-eabi"
+
+[env]
+DEFMT_LOG = "info"
+
